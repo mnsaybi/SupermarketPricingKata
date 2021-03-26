@@ -83,10 +83,10 @@ namespace SupermarketPricing.Services
                 throw new ArgumentException("Cannot add an order item with negative or zero quantity");
             }
 
-            if ((item.Product.PricingRule != null) && (item.Product.MeasureUnit != item.Product.PricingRule.MeasureUnit))
-            {
-                throw new ArgumentException("Cannot add an order item with different measure unit and pricing rule unit");
-            }
+            //if ((item.Product.PricingRule != null)) //&& (item.Product.MeasureUnit != item.Product.PricingRule.MeasureUnit)
+            //{
+            //    throw new ArgumentException("Cannot add an order item with different measure unit and pricing rule unit");
+            //}
 
             order.ProductOrderList.Add(item);
 

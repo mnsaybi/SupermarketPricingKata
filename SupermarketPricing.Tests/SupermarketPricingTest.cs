@@ -7,6 +7,7 @@ using System.Collections.Generic;
 
 namespace SupermarketPricing.Tests
 {
+    [TestFixture]
     public class SupermarketPricingTest
     {
         private OrderService orderService;
@@ -15,6 +16,7 @@ namespace SupermarketPricing.Tests
         [SetUp]
         public void Setup()
         {
+            // we can use Mocking framework like Moq or NSubstitute
             orderService = new OrderService();
             productService = new ProductService();
 
@@ -60,38 +62,65 @@ namespace SupermarketPricing.Tests
             productService.AddProduct(new Product()
             {
                 Id = 1,
-                Name = "A",
+                Name = "A1",
                 Sku = "A0001",
-                UnitPrice = 3.5m,
+                UnitPrice = 0.5m,
                 MeasureUnit = MeasureUnit.PIECE,
                 PricingRule = productService.GetPricingRule(1)
             });
             productService.AddProduct(new Product()
             {
                 Id = 2,
-                Name = "B",
+                Name = "B1",
                 Sku = "B0001",
-                UnitPrice = 3.5m,
-                MeasureUnit = MeasureUnit.PIECE,
-                PricingRule = productService.GetPricingRule(1)
+                UnitPrice = 4.75m,
+                MeasureUnit = MeasureUnit.POUND,
+                PricingRule = productService.GetPricingRule(2)
             });
             productService.AddProduct(new Product()
             {
                 Id = 3,
-                Name = "C",
+                Name = "C1",
                 Sku = "C0001",
-                UnitPrice = 3.5m,
+                UnitPrice = 1.75m,
                 MeasureUnit = MeasureUnit.PIECE,
-                PricingRule = productService.GetPricingRule(1)
+                PricingRule = productService.GetPricingRule(3)
             });
             productService.AddProduct(new Product()
             {
                 Id = 4,
-                Name = "D",
+                Name = "D1",
                 Sku = "D0001",
-                UnitPrice = 3.5m,
+                UnitPrice = 5.25m,
                 MeasureUnit = MeasureUnit.PIECE,
-                PricingRule = productService.GetPricingRule(1)
+                PricingRule = productService.GetPricingRule(4)
+            });
+
+            productService.AddProduct(new Product()
+            {
+                Id = 5,
+                Name = "E1",
+                Sku = "E0001",
+                UnitPrice = 5.25m,
+                MeasureUnit = MeasureUnit.GALLON
+            });
+            productService.AddProduct(new Product()
+            {
+                Id = 7,
+                Name = "B2",
+                Sku = "B0002",
+                UnitPrice = 0.55m,
+                MeasureUnit = MeasureUnit.OUNCE,
+                PricingRule = productService.GetPricingRule(2)
+            });
+            productService.AddProduct(new Product()
+            {
+                Id = 8,
+                Name = "D2",
+                Sku = "D0002",
+                UnitPrice = 5.25m,
+                MeasureUnit = MeasureUnit.GALLON,
+                PricingRule = productService.GetPricingRule(4)
             });
 
             // init new order object with zero items
@@ -123,9 +152,9 @@ namespace SupermarketPricing.Tests
         {
             productService.AddProduct(new Product()
             {
-                Id = 5,
-                Name = "E",
-                Sku = "E0001",
+                Id = 6,
+                Name = "F1",
+                Sku = "F0001",
                 UnitPrice = 6.5m,
                 MeasureUnit = MeasureUnit.PIECE,
                 PricingRule = productService.GetPricingRule(1)
@@ -167,8 +196,8 @@ namespace SupermarketPricing.Tests
         public void Test_CanAddOrRemoveItemToOrder()
         {
             var item = new ProductOrder() { Id = 1, Product = productService.GetProduct(2), Quantity = 3 };
-            orderService.AddItemToOrder(1, item);           
-            orderService.RemoveItemFromOrder(1,item.Id);
+            orderService.AddItemToOrder(1, item);
+            orderService.RemoveItemFromOrder(1, item.Id);
 
         }
 
@@ -207,5 +236,120 @@ namespace SupermarketPricing.Tests
         {
             Assert.Catch(() => UnitsConverter.GetEquivalentUnit(MeasureUnit.KILOGRAM, MeasureUnit.LITER));
         }
+
+        [Test]
+        public void Test_CanCalculateWhenDifferentUnits()
+        {
+            // Arrange
+            var porder = new ProductOrder()
+            {
+                Id = 1,
+                Product = productService.GetProduct(7),
+                Quantity = 5
+            };
+
+            // Act
+            // add product with different but compatiblemeasure unit between product and pricing rule            
+            orderService.AddItemToOrder(1, porder);
+
+            // Assert
+            Assert.DoesNotThrow(() => orderService.CalculateTotalPrice(1));
+        }
+
+        [Test]
+        public void Test_ExceptionWhenNotCompatibleUnits()
+        {
+            // Arrange
+            var porder = new ProductOrder()
+            {
+                Id = 1,
+                Product = productService.GetProduct(8),
+                Quantity = 5
+            };
+
+            // Act
+            // add product with incompatible measure unit between product and pricing rule            
+            orderService.AddItemToOrder(1, porder);
+
+            // Assert
+            Assert.Catch(() => orderService.CalculateTotalPrice(1));
+        }
+
+        [Test]
+        public void Test_PassWhenPrincingRuleIsNull()
+        {
+            var porder = new ProductOrder()
+            {
+                Id = 1,
+                Product = productService.GetProduct(5),
+                Quantity = 10
+            };
+
+            // add product with undefined pricing rule
+            Assert.DoesNotThrow(() => orderService.AddItemToOrder(1, porder));
+
+        }
+
+        [Test]
+        public void Test_CanCalculateWhenPrincingRuleIsNull()
+        {
+            // Arrange
+            var porder = new ProductOrder()
+            {
+                Id = 1,
+                Product = productService.GetProduct(5),
+                Quantity = 10
+            };
+
+            // Act
+            // add product with undefined pricing rule
+            orderService.AddItemToOrder(1, porder);
+
+            // Assert
+            Assert.AreEqual(52.5, orderService.CalculateTotalPrice(1));
+
+        }
+
+        [Test]
+        [TestCase(1, 3, 1.0)]
+        [TestCase(1, 2, 1.0)]
+        [TestCase(1, 5, 2.0)]
+        [TestCase(2, 1, 1.99)]
+        [TestCase(2, 1.5, 1.99 + 4.75 * 0.5)]
+        [TestCase(7, 10, 0.55 * 10 * 0.0625)]
+        [TestCase(3, 2, 1.5)]
+        [TestCase(3, 6, 4.5)]
+        [TestCase(3, 5, 3 + 1.75)]
+        [TestCase(4, 15, 0.65 * 15)]
+        public void Test_CanCalculateTotalWithPricingRules(int productId, decimal qty, decimal expectedTotal)
+        {
+            // Arrange
+            var porder = new ProductOrder() { Id = 1, Product = productService.GetProduct(productId), Quantity = qty };
+
+            // Act
+            // add product with undefined pricing rule
+            orderService.AddItemToOrder(1, porder);
+
+            // Assert
+            Assert.AreEqual(expectedTotal, orderService.CalculateTotalPrice(1));
+
+        }
+
+        [Test]
+        [TestCase(new int[] { 1, 3, 4 }, new object[] { 3.0, 2.0, 15.0 }, 1 + 1.5 + 0.65 * 15)]
+        [TestCase(new int[] { 1, 2, 3 }, new object[] { 2, 1.5, 6 }, 1 + 1.99 + 4.75 * 0.5 + 4.5)]
+        [TestCase(new int[] { 1, 7, 3 }, new object[] { 5, 10, 5 }, 2 + 0.55 * 10 * 0.0625 + 3 + 1.75)]
+        [TestCase(new int[] { 1, 2, 3 }, new object[] { 3, 1, 2 }, 1 + 1.99 + 1.5)]
+        public void Test_CanCalculateTotalWithMultiplePricingRules(int[] productId, object[] qty, decimal expectedTotal)
+        {
+            orderService.AddItemToOrder(1, new ProductOrder() { Id = 1, Product = productService.GetProduct(productId[0]), Quantity = Convert.ToDecimal(qty[0]) });
+            orderService.AddItemToOrder(1, new ProductOrder() { Id = 1, Product = productService.GetProduct(productId[1]), Quantity = Convert.ToDecimal(qty[1]) });
+            orderService.AddItemToOrder(1, new ProductOrder() { Id = 1, Product = productService.GetProduct(productId[2]), Quantity = Convert.ToDecimal(qty[2]) });
+
+            // Assert
+            Assert.AreEqual(expectedTotal, orderService.CalculateTotalPrice(1));
+
+        }
+
     }
 }
