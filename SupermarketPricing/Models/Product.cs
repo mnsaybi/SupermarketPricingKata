@@ -5,7 +5,7 @@ using SupermarketPricing.Common;
 
 namespace SupermarketPricing.Models
 {
-    class Product
+    public class Product
     {
         /// <summary>
         /// Product identifier

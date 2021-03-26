@@ -5,7 +5,7 @@ using SupermarketPricing.Common;
 
 namespace SupermarketPricing.Models
 {
-    class PricingRule
+    public class PricingRule
     {
         /// <summary>
         /// Pricing rule identifier.

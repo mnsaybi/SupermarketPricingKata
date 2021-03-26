@@ -4,14 +4,4 @@
     <TargetFramework>netcoreapp2.1</TargetFramework>
   </PropertyGroup>
 
-  <ItemGroup>
-    <Compile Remove="Business\IOrderBusiness.cs" />
-    <Compile Remove="Business\OrderBusiness.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Business\" />
-    <Folder Include="Services\" />
-  </ItemGroup>
-
 </Project>

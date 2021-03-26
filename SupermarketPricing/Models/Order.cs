@@ -4,7 +4,7 @@ using System.Text;
 
 namespace SupermarketPricing.Models
 {
-    class Order
+    public class Order
     {
         /// <summary>
         /// Order operation identifier.

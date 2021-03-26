@@ -13,52 +13,17 @@ namespace SupermarketPricing.Business
         {
         }
 
-        public Order AddItemToOrder(Order order, ProductOrder item)
-        {
-            if (item == null)
-            {
-                throw new Exception("Cannot insert null order item ");
-            }
-
-            if (item.Product == null)
-            {
-                throw new Exception("Cannot add an order item invalid product");
-            }
-
-            //if (item.Product.PricingRule == null)
-            //{
-            //    throw new Exception("Cannot add an order item invalid pricing rule");
-            //}
-
-            if (string.IsNullOrEmpty(item.Product.Sku))
-            {
-                throw new Exception("Cannot add an order item invalid product reference");
-            }
-
-            if (item.Product.UnitPrice <= 0)
-            {
-                throw new Exception("Cannot add an order item invalid unit price");
-            }
-
-            if (item.Quantity <= 0)
-            {
-                throw new Exception("Cannot add an order item with negative or zero quantity");
-            }
-
-            if ((item.Product.PricingRule != null) && (item.Product.MeasureUnit != item.Product.PricingRule.MeasureUnit))
-            {
-                throw new Exception("Cannot add an order item with different measure unit and pricing rule unit");
-            }
-
-            order.ProductOrderList.Add(item);
-            return order;
-        }
 
         public decimal CalculateTotalPrice(Order order)
         {
             try
             {
                 decimal totalPrice = 0;
+                if (order == null)
+                {
+                    throw new ArgumentNullException();
+                }
+
                 IList<ProductOrder> orderItems = order.ProductOrderList;
 
                 if (orderItems.Count == 0) return 0;
